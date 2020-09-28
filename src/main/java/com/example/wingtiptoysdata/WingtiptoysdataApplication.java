@@ -1,32 +1,71 @@
 package com.example.wingtiptoysdata;
 
+import java.util.Collections;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import java.util.Optional;
-
 @SpringBootApplication
+@RestController
 public class WingtiptoysdataApplication implements CommandLineRunner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WingtiptoysdataApplication.class);
 
     @Autowired
     private UserRepository repository;
+    
+    @GetMapping("get")
+    public String get() {
+      return connectionString;
+    }
+
+    @Value("${azure.cosmosdb.uri}")
+    private String uri;
+
+    @Value("${azure.cosmosdb.key}")
+    private String key;
+
+    @Value("${azure.cosmosdb.database}")
+    private String dbName;
+    
+    @Value("${cosmosdbconfig}")
+    private String connectionString;
 
     public static void main(String[] args) {
         SpringApplication.run(WingtiptoysdataApplication.class, args);
     }
+    
+    @Bean
+    ApplicationRunner applicationRunner(@Value("${cosmosdbconfig}") String connectionString) {
+        return args -> {
+        	System.out.println(String.format("\nConnection String stored in Azure Key Vault:\n%s\n",connectionString));
+        	
+        	String[] arrOfStr = null;
+        	if (!connectionString.isEmpty()) {
+        		arrOfStr = connectionString.split(";");
+        		dbName = arrOfStr[0];
+            	uri = "https://" + dbName + ".vault.azure.net";
+            	key = arrOfStr[1];
+        	}
+        };
+    }
 
     public void run(String... var1) throws Exception {
+    	
         final User testUser = new User("1", "Tasha", "Calderon", "4567 Main St Buffalo, NY 98052");
 
         LOGGER.info("Saving user: {}", testUser);
@@ -60,7 +99,7 @@ public class WingtiptoysdataApplication implements CommandLineRunner {
         LOGGER.info("Found user by findById : {}", result);
     }
 
-    @PostConstruct
+    /*@PostConstruct
     public void setup() {
         LOGGER.info("Clear the database");
         this.repository.deleteAll().block();
@@ -70,5 +109,6 @@ public class WingtiptoysdataApplication implements CommandLineRunner {
     public void cleanup() {
         LOGGER.info("Cleaning up users");
         this.repository.deleteAll().block();
-    }
+    }*/
+    
 }

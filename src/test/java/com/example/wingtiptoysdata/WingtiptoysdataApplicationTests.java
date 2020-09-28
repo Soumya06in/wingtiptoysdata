@@ -1,4 +1,4 @@
-package com.example.wingtiptoysdata;
+/*package com.example.wingtiptoysdata;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,4 +10,4 @@ class WingtiptoysdataApplicationTests {
 	void contextLoads() {
 	}
 
-}
+}*/
